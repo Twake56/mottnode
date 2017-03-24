@@ -243,5 +243,5 @@ pg.connect(process.env.DATABASE_URL, function(err, client, done) {
 */
 
 app.listen(app.get('port'), function() {
-  console.log('Node app is running on port', app.get('port'));
+  console.log('Node app is starting on port', app.get('port'));
 });
