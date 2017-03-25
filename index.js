@@ -65,7 +65,7 @@ function getGameData(gameid, callback){
 app.get('/db/:player/:data', function (request, response) {
   var player = request.params.player
   var data = request.params.data
-  //var second_player = null
+  var second_player = null
   for (x in friends){
     if (player == friends[x].name){
       var current_player = friends[x]
@@ -74,15 +74,14 @@ app.get('/db/:player/:data', function (request, response) {
       var second_player = friends[x]
     }
   };
-  console.log(second_player)
   connectdb(current_player)
-//if(second_player != null){
+if(second_player != null){
   pg.connect(process.env.DATABASE_URL, function(err, client, done) {
     client.query('Select matchdata from '  + current_player.name, function(err, result){
       jsondata = []
 
       for (i in result.rows){
-        if(result.rows[i].matchdata != null){
+        if(result.rows[i].matchdata != null && result.rows[i].matchdata.queueType == 'TEAM_BUILDER_RANKED_SOLO'){
           for (j in result.rows[i].matchdata.participantIdentities){
             if(result.rows[i].matchdata.participantIdentities[j].player.summonerId == second_player.id){
               jsondata.push(result.rows[i])
@@ -99,7 +98,11 @@ app.get('/db/:player/:data', function (request, response) {
     })
 
   });//connect
-
+}
+else{
+  response.status(400)
+  response.send('Second player incorrectly specified');
+}
 });//get
 
 
