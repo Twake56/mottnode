@@ -10,7 +10,7 @@ var trevor = {id:'26767760',name:'trevor'}
 var dave = {id:'32702702',name:'dave'}
 var justin = {id:'45496123',name:'justin'}
 var nick = {id:'75821827',name:'nick'}
-var raf = {id:'532474',name:'nick'}
+var raf = {id:'532474',name:'raf'}
 var surat = {id:'30852265',name:'surat'}
 var steve = {id:'530530',name:'steve'}
 var wes = {id:'47884918',name:'wes'}
@@ -61,24 +61,36 @@ function getGameData(gameid, callback){
       callback(data);
   });
 }
-function sleepFor( sleepDuration ){
-    var now = new Date().getTime();
-    while(new Date().getTime() < now + sleepDuration){ /* do nothing */ }
-};
+
 app.get('/db/:player/:data', function (request, response) {
   var player = request.params.player
+  var data = request.params.data
+  //var second_player = null
   for (x in friends){
     if (player == friends[x].name){
       var current_player = friends[x]
     }
+    if (data == friends[x].name && data != player){
+      var second_player = friends[x]
+    }
   };
+  console.log(second_player)
   connectdb(current_player)
+//if(second_player != null){
   pg.connect(process.env.DATABASE_URL, function(err, client, done) {
     client.query('Select matchdata from '  + current_player.name, function(err, result){
       jsondata = []
+
       for (i in result.rows){
         if(result.rows[i].matchdata != null){
-          jsondata.push(result.rows[i])
+          for (j in result.rows[i].matchdata.participantIdentities){
+            if(result.rows[i].matchdata.participantIdentities[j].player.summonerId == second_player.id){
+              jsondata.push(result.rows[i])
+            }
+
+          }
+          //jsondata.push(result.rows[i])
+          //console.log(result.rows[i].matchdata.participantIdentities)
         }
       }
 
@@ -87,7 +99,10 @@ app.get('/db/:player/:data', function (request, response) {
     })
 
   });//connect
+
 });//get
+
+
 function connectdb(current_player){
 pg.connect(process.env.DATABASE_URL, function(err, client, done) {
   client.query('SELECT matchid FROM ' + current_player.name, function(err, result) {
@@ -156,91 +171,6 @@ pg.connect(process.env.DATABASE_URL, function(err, client, done) {
 
 }); //client connect
 };
-//SYNC player DB DATA
-/*app.get('/db/:player/*', function (request, response) {
-  var player = request.params.player
-  for (x in friends){
-    if (player == friends[x].name){
-      var current_player = friends[x]
-    }
-  }
-  connectdb();
-  function connectdb(current){
-  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-    client.query('SELECT matchid FROM ' + current_player.name, function(err, result) {
-      //done(err);
-      var idsInDb = [];
-
-      for (i in result.rows){
-
-        idsInDb.push(result.rows[i].matchid);
-      };
-      getJSONData(current_player.id, idsInDb, function(matchids, dbids){
-        for (j in matchids){
-          //console.log(!doesInclude(matchids[j],dbids))
-          if(!doesInclude(matchids[j],dbids) && matchids[j] != null){
-
-            //console.log("adding " + matchids[j] + " to db")
-            var temp = matchids[j];
-
-            client.query('INSERT INTO ' + current_player.name + ' (matchid) values($1)', [temp], function(err, result){
-              //done(err);
-            });
-          };
-        };
-      }); // get json data
-    client.query('SELECT matchid FROM ' + current_player.name, function(err, result) {
-    var gameIdsDb = [];
-    for (i in result.rows){
-      if(result.rows[i].matchid != null){
-        gameIdsDb.push(result.rows[i].matchid)
-      }
-    };//Pull all matchids
-    client.query('SELECT matchdata->> ($1) as matchid FROM ' + current_player.name,['matchId'], function(err, res) {
-      var matchDataIds = [];
-
-      for (j in res.rows){
-
-        if(res.rows[j].matchid != null){
-          matchDataIds.push(res.rows[j].matchid)
-        };
-      };
-      console.log(matchDataIds)
-
-      if(gameIdsDb.length != matchDataIds.length || gameIdsDb == 0){//If matchids differ add difference
-        var diff = _.difference(gameIdsDb, matchDataIds);
-        console.log(matchDataIds.length + ' vs' +gameIdsDb.length);
-
-        for(var x = 0; x < diff.length; x++){
-          setTimeout(function(x){
-
-          getGameData(diff[x], function(data){
-            //Enters json object into db
-            client.query('INSERT INTO ' + current_player.name + ' (matchdata) values($1)', [data], function(err, result){
-
-                console.log('match data logged');//When data is written to db
-        });//insertdata
-
-      })//getgamedata
-    }, 3000 * x,x);//Timer times index for api limits
-    };//forloop
-
-  }
-    });
-
-    });
-
-    if (err)
-     { console.error(err); response.send("Error " + err); }
-    else
-     { response.send(200);}//render('pages/db',{results: result.rows} ); }
-
-    }); //initial query
-
-  }); //client connect
-};
-}); //get
-*/
 
 app.listen(app.get('port'), function() {
   console.log('Node app is starting on port', app.get('port'));
