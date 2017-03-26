@@ -112,10 +112,11 @@ if(second_player != null){
           mutual_losses += 1;
         }
       }
-      
+
       var duo_percentage = (mutual_wins/(mutual_wins + mutual_losses) * 100)
 
       response.setHeader('Content-Type', 'application/json')
+      response.status(200)
       response.send({'win_percent':duo_percentage});
     })
 
