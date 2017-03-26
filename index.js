@@ -16,7 +16,7 @@ var steve = {id:'530530',name:'steve'}
 var wes = {id:'47884918',name:'wes'}
 var friends = [matt,jake,jerry,trevor,dave,justin,nick,raf,surat,steve,wes]
 //global data variable
-
+var summoner_id = ['31203597', '45556126', '19139825', '26767760', '32702702', '45496123', '75821827', '532474', '30852265', '530530', '47884918']
 
 app.set('port', (process.env.PORT || 5000));
 
@@ -35,7 +35,7 @@ var pg = require('pg');
 function doesInclude(array, value){
   var ret = false;
   for(pos in array){
-      if (array[pos] === value){
+      if (array[pos] == value){
         ret = true;
       }
   }
@@ -92,9 +92,31 @@ if(second_player != null){
           //console.log(result.rows[i].matchdata.participantIdentities)
         }
       }
+      var participant_id = 0;
+      var mutual_wins = 0;
+      var mutual_losses = 0;
+      for (x in jsondata){
+        for (y in jsondata[x].matchdata.participantIdentities){
+          
+          if (doesInclude(summoner_id,jsondata[x].matchdata.participantIdentities[y].player.summonerId)){
+
+            participant_id = jsondata[x].matchdata.participantIdentities[y].participantId
+            break;
+          }
+        }
+
+        if (jsondata[x].matchdata.participants[participant_id - 1].stats.winner == true){
+          mutual_wins += 1;
+        }
+        else if(jsondata[x].matchdata.participants[participant_id - 1].stats.winner == false){
+          mutual_losses += 1;
+        }
+      }
+      console.log(jsondata)
+      var duo_percentage = (mutual_wins/(mutual_wins + mutual_losses) * 100)
 
       response.setHeader('Content-Type', 'application/json')
-      response.send(jsondata)
+      response.send({'win_percent':duo_percentage});
     })
 
   });//connect
