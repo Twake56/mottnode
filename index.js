@@ -97,7 +97,7 @@ if(second_player != null){
       var mutual_losses = 0;
       for (x in jsondata){
         for (y in jsondata[x].matchdata.participantIdentities){
-          
+
           if (doesInclude(summoner_id,jsondata[x].matchdata.participantIdentities[y].player.summonerId)){
 
             participant_id = jsondata[x].matchdata.participantIdentities[y].participantId
@@ -112,7 +112,7 @@ if(second_player != null){
           mutual_losses += 1;
         }
       }
-      console.log(jsondata)
+      
       var duo_percentage = (mutual_wins/(mutual_wins + mutual_losses) * 100)
 
       response.setHeader('Content-Type', 'application/json')
