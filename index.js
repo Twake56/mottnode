@@ -67,9 +67,6 @@ function getGameData(gameid, callback){
 }
 
 app.get('/:player1/:player2', function(req,res){
-  res.setHeader('Content-Type', 'application/json')
-  res.status(200)
-  res.send({'win_percent':100});
   var player1 = req.params.player1;
   var player2 = req.params.player2;
   for (x in friends){
