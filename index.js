@@ -197,9 +197,9 @@ app.get('/:player1/:player2', function(req,res){
               }
             }
 
-            var duo_percentage = (mutual_wins/(mutual_wins + mutual_losses) * 100)
+            var duo_percentage = (mutual_wins/commonMatches.length * 100)
             res.setHeader('Content-Type', 'application/json')
-            res.status(200)
+            //res.status(200)
             res.send({'win_percent':duo_percentage});
           }
         })
