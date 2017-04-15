@@ -65,7 +65,11 @@ function getGameData(gameid, callback){
       callback(data);
   });
 }
+
 app.get('/:player1/:player2', function(req,res){
+  res.setHeader('Content-Type', 'application/json')
+  res.status(200)
+  res.send({'win_percent':100});
   var player1 = req.params.player1;
   var player2 = req.params.player2;
   for (x in friends){
@@ -85,7 +89,7 @@ app.get('/:player1/:player2', function(req,res){
           for(i in match_ids){
             if(!doesInclude(db_ids, match_ids[i]) || db_ids.length == 0){
 
-              client.query('INSERT INTO loldata (matchid, jdata) values($1,$2)',[match_ids[i],null], function(err, result){
+              client.query('INSERT INTO loldata (matchid, jdata, parts) values($1,$2,$3)',[match_ids[i],null,null], function(err, result){
                 if (err){
                   //console.log('err logging matchid')
                 }
@@ -121,6 +125,50 @@ app.get('/:player1/:player2', function(req,res){
         }, 3000 * y,y);
       }
     });//match query
+    /*client.query("SELECT matchid from loldata WHERE parts is null", function(err,results){
+      var matchList = results.rows;
+      console.log(matchList.length)
+      var dataList = [];
+      for (it in matchList){
+        client.query("SELECT jdata from loldata where matchid = $1", [matchList[it].matchid], function(err,result){
+          var participantInfo = {data:[]}
+          var match = result.rows[0];
+          for(a in match.jdata.participantIdentities){
+            var sumId = match.jdata.participantIdentities[a].player.summonerId
+            var count = 0
+            if(doesInclude(summoner_id,sumId)){
+              var participant_id = match.jdata.participantIdentities[a].participantId
+              var winner = match.jdata.participants[participant_id - 1].stats.winner
+              participantInfo.data.push({'sumId':sumId, 'partId': participant_id,'winner':winner,'matchid':matchList[it].matchid})
+            }
+
+            if(a == 9){
+            dataList.push(participantInfo);
+            }
+
+          }
+
+
+          console.log(dataList.length + ' vs ' + matchList.length)
+          if(dataList.length == matchList.length){
+
+            for (k in dataList){
+
+          client.query("UPDATE loldata SET parts = $1 WHERE matchid = $2",[dataList[k],dataList[k].data[0].matchid],function(err, result){
+            if(err){
+              console.log('error logging parts')
+            }
+            else{
+              console.log(result)
+            }
+
+          })
+        }
+      }
+        });//one match
+      }
+
+    })*/
     client.query("SELECT matchid from loldata t, json_array_elements(t.jdata::json->'participantIdentities') as elem where elem -> 'player' ->>'summonerId' = $1 INTERSECT SELECT matchid  from loldata t, json_array_elements(t.jdata::json->'participantIdentities') as elem where elem -> 'player' ->>'summonerId' = $2 INTERSECT select matchid from loldata where jdata ->> 'queueType' = 'TEAM_BUILDER_RANKED_SOLO'",[sum1.id,sum2.id], function(err, result){
       var commonMatches = result.rows;
       matchData = []
@@ -153,17 +201,15 @@ app.get('/:player1/:player2', function(req,res){
             }
 
             var duo_percentage = (mutual_wins/(mutual_wins + mutual_losses) * 100)
-            
             res.setHeader('Content-Type', 'application/json')
             res.status(200)
             res.send({'win_percent':duo_percentage});
-
           }
         })
       }
 
 
-  })
+  })//longquery
 
     //})
     });
