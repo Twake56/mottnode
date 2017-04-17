@@ -199,7 +199,7 @@ app.get('/:player1/:player2', function(req,res){
 
             var duo_percentage = (mutual_wins/commonMatches.length * 100)
             res.setHeader('Content-Type', 'application/json')
-            //res.status(200)
+            res.statusCode = 200;
             res.send({'win_percent':duo_percentage});
           }
         })
@@ -267,9 +267,10 @@ if(second_player != null){
 
       var duo_percentage = (mutual_wins/(mutual_wins + mutual_losses) * 100)
 
-      response.setHeader('Content-Type', 'application/json')
-      response.status(200)
-      response.send({'win_percent':duo_percentage});
+      response.writeHead(200,{'Content-Type':'application/json'})
+      response.end({'win_percent':duo_percentage});
+      head = response.getheaders()
+      console.log(head)
     })
 
   });//connect
